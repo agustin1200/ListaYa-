@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ListaYa</title>
+
+<style>
+    :root{
+        --bg:#F3F2EF;
+        --card:#FFFFFF;
+        --text:#1C1C1C;
+        --muted:#6B6B6B;
+        --border:#E0DED8;
+      
+        --primary:#7A5C3E;
+        --primary-soft:#C9B79C;
+      
+        --ok:#4F6F52;
+        --warn:#8C3A2B;
+      
+        --radius:18px;
+      
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro", sans-serif;
+      }
+      
+
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--text); }
+  .app{ max-width:980px; margin:0 auto; padding:16px; }
+
+  header{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    flex-wrap:wrap; margin-bottom:12px;
+  }
+  h1{ margin:0; font-size:22px; letter-spacing:-.2px; }
+  .top-pill{
+    display:flex; gap:10px; align-items:center;
+    padding:10px 12px; border:1px solid var(--border); border-radius:999px; background:#fff;
+    font-weight:700;
+  }
+  .muted{ color:var(--muted); font-weight:600; }
+
+  .grid{
+    display:grid; gap:12px;
+  }
+  @media (min-width: 900px){
+    .grid-2{ grid-template-columns: 1.15fr .85fr; }
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--r);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, .06);
+    padding:14px;
+  }
+
+  .row{
+    display:grid; gap:10px;
+  }
+  @media (min-width: 700px){
+    .row-5{ grid-template-columns: 1.25fr .55fr .75fr .9fr .7fr; align-items:end; }
+    .row-3{ grid-template-columns: 1fr 1fr 1fr; align-items:end; }
+    .row-2{ grid-template-columns: 1fr 1fr; align-items:end; }
+  }
+
+  label{ display:block; font-size:12px; color:var(--muted); margin:0 0 6px; font-weight:700; }
+  input, select, button{
+    width:100%;
+    padding:12px;
+    border-radius:14px;
+    border:1px solid #D7DBEA;
+    font-size:14px;
+    outline:none;
+    background:#fff;
+  }
+  input:focus, select:focus{
+    border-color: rgba(37,99,235,.6);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+  }
+  button{
+    border:none;
+    background:var(--primary);
+    color:#fff;
+    font-weight:800;
+    cursor:pointer;
+    background:var(--primary-soft);
+    button:hover{
+        background:var(--primary-soft);
+      }
+      
+  }
+  button.secondary{
+    background:#EEF2FF;
+    color:var(--primary);
+    border:1px solid #D7DDFF;
+  }
+  button.danger{
+    background:#FFE9EA;
+    color:#B91C1C;
+    border:1px solid #FFD2D6;
+  }
+
+  .budgetLine{
+    display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;
+    margin-bottom:10px;
+  }
+  .progress{ height:10px; background:#E5E7EB; border-radius:999px; overflow:hidden; }
+  .progress span{ display:block; height:100%; width:0%; background:var(--primary); }
+
+  .msg{
+    margin-top:10px; font-size:13px; font-weight:700;
+    color:var(--muted);
+  }
+  .msg.ok{ color:var(--ok); }
+  .msg.warn{ color:var(--warn); }
+
+  .sectionTitle{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    margin:0 0 10px;
+  }
+  .sectionTitle h2{ margin:0; font-size:14px; letter-spacing:.2px; }
+  .chip{
+    display:inline-flex;
+    gap:8px;
+    align-items:center;
+    padding:8px 12px;
+    border-radius:999px;
+    border:1px solid var(--border);
+    background:#FAF9F7;
+    font-size:12px;
+    font-weight:700;
+    color:var(--text);
+  }
+  
+  table{ width:100%; border-collapse:collapse; }
+  th, td{ padding:10px; border-bottom:1px solid #EEF0F6; text-align:left; }
+  th{ font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; }
+  td.num{ text-align:right; font-variant-numeric: tabular-nums; }
+  .actions{ display:flex; gap:8px; justify-content:flex-end; flex-wrap:wrap; }
+  .miniBtn{
+    width:auto; padding:8px 10px; border-radius:12px; font-weight:900; font-size:13px;
+  }
+  .hint{ font-size:12px; color:var(--muted); font-weight:600; margin-top:8px; }
+</style>
+</head>
+
+<body>
+<div class="app">
+  <header>
+    <h1>ListaYa</h1>
+    <div class="top-pill">
+      <span class="muted" id="listNamePill">Lista: Súper</span>
+      <span id="itemsCount">0</span>
+      <span>·</span>
+      <span id="total">$0</span>
+    </div>
+  </header>
+
+  <div class="grid grid-2">
+    <!-- IZQUIERDA -->
+    <section class="card">
+      <div class="sectionTitle">
+        <h2>Agregar ítem</h2>
+        <span class="chip" id="statusChip">Listo</span>
+      </div>
+
+      <div class="row row-5">
+        <div>
+          <label>Producto</label>
+          <input id="name" placeholder="Ej: Yerba, fideos, jabón…" />
+        </div>
+        <div>
+          <label>Cant.</label>
+          <input id="qty" type="number" min="1" step="1" value="1" />
+        </div>
+        <div>
+          <label>Precio unit.</label>
+          <input id="price" type="number" min="0" step="0.01" placeholder="1200" />
+        </div>
+        <div>
+          <label>Categoría</label>
+          <select id="cat">
+            <option value="🥦 Alimentos">🥦 Alimentos</option>
+            <option value="🥤 Bebidas">🥤 Bebidas</option>
+            <option value="🧴 Higiene">🧴 Higiene</option>
+            <option value="🧼 Limpieza">🧼 Limpieza</option>
+            <option value="✨ Otros">✨ Otros</option>
+          </select>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button id="addBtn" type="button">Agregar</button>
+        </div>
+      </div>
+
+      <div class="row row-3" style="margin-top:10px;">
+        <div>
+          <label>Buscar</label>
+          <input id="search" placeholder="Filtrar por nombre o categoría…" />
+        </div>
+        <div>
+          <label>Ordenar</label>
+          <select id="sort">
+            <option value="none">Sin ordenar</option>
+            <option value="cat">Por categoría</option>
+            <option value="name">Por nombre</option>
+            <option value="cost_desc">Mayor costo</option>
+            <option value="cost_asc">Menor costo</option>
+          </select>
+        </div>
+        <div>
+          <label>Lista</label>
+          <select id="listSelect"></select>
+        </div>
+      </div>
+
+      <div class="row row-3" style="margin-top:10px;">
+        <button id="newListBtn" class="secondary" type="button">Crear nueva lista</button>
+        <button id="exportBtn" class="secondary" type="button">Exportar CSV</button>
+        <button id="clearBtn" class="danger" type="button">Vaciar lista</button>
+      </div>
+
+      <div class="hint">Tip: apretá <b>Enter</b> en “Precio unit.” para agregar rápido.</div>
+    </section>
+
+    <!-- DERECHA -->
+    <aside class="card">
+      <div class="sectionTitle">
+        <h2>Presupuesto</h2>
+        <span class="chip">Control</span>
+      </div>
+
+      <div class="row row-2">
+        <div>
+          <label>Presupuesto</label>
+          <input id="budget" type="number" min="0" step="0.01" placeholder="Ej: 25000" />
+        </div>
+        <div>
+          <label>Moneda</label>
+          <select id="currency">
+            <option value="ARS">$ ARS</option>
+            <option value="CLP">$ CLP</option>
+            <option value="USD">US$</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;">
+        <div class="budgetLine">
+          <span class="muted">Progreso</span>
+          <span class="muted" id="progressText">$0 / $0</span>
+        </div>
+        <div class="progress"><span id="bar"></span></div>
+        <div id="budgetMsg" class="msg">Cargá un presupuesto para ver cuánto te queda.</div>
+      </div>
+
+      <hr style="border:none; border-top:1px solid #EEF0F6; margin:14px 0;">
+
+      <div class="sectionTitle">
+        <h2>Totales por categoría</h2>
+        <span class="chip">Auto</span>
+      </div>
+
+      <div class="row">
+        <div class="chip">🥦 Alimentos: <span id="sumFood">$0</span></div>
+        <div class="chip">🥤 Bebidas: <span id="sumDrink">$0</span></div>
+        <div class="chip">🧴 Higiene: <span id="sumHyg">$0</span></div>
+        <div class="chip">🧼 Limpieza: <span id="sumClean">$0</span></div>
+        <div class="chip">✨ Otros: <span id="sumOther">$0</span></div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- LISTA -->
+  <section class="card" style="margin-top:12px;">
+    <div class="sectionTitle">
+      <h2>Tu lista</h2>
+      <span class="chip" id="filteredPill">Mostrando: todo</span>
+    </div>
+
+    <div style="overflow:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Categoría</th>
+            <th class="num">Cant.</th>
+            <th class="num">Unit.</th>
+            <th class="num">Subtotal</th>
+            <th class="num">Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="hint">Se guarda en tu navegador automáticamente. Si cerrás y volvés, queda igual.</div>
+  </section>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  // --- Estado con múltiples listas ---
+  const state = {
+    currency: "ARS",
+    lists: {
+      "Súper": { budget: "", items: [] }
+    },
+    activeList: "Súper",
+    search: "",
+    sort: "none"
+  };
+
+  function load(){
+    const raw = localStorage.getItem("listaya_pro_v1");
+    if(!raw) return;
+    try{
+      const parsed = JSON.parse(raw);
+      if(parsed && parsed.lists && parsed.activeList) Object.assign(state, parsed);
+    }catch(e){}
+  }
+
+  function save(){
+    localStorage.setItem("listaya_pro_v1", JSON.stringify(state));
+  }
+
+  function symbol(){
+    return state.currency === "USD" ? "US$" : "$";
+  }
+
+  function money(n){
+    const cur = state.currency;
+    const sym = symbol();
+    const num = Number(n || 0);
+    const decimals = (cur === "CLP") ? 0 : 2;
+    // sin Intl para que sea simple/offline
+    const fixed = num.toFixed(decimals);
+    // separador miles estilo es-AR (simple)
+    const parts = fixed.split(".");
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return sym + parts.join(decimals ? "," : "");
+  }
+
+  function active(){
+    return state.lists[state.activeList];
+  }
+
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function subtotal(it){
+    return Number(it.qty) * Number(it.price);
+  }
+
+  function compute(){
+    const list = active();
+    const total = list.items.reduce((a,it)=>a+subtotal(it),0);
+
+    const sums = { "🥦 Alimentos":0, "🥤 Bebidas":0, "🧴 Higiene":0, "🧼 Limpieza":0, "✨ Otros":0 };
+    for(const it of list.items){
+      sums[it.cat] = (sums[it.cat] || 0) + subtotal(it);
+    }
+    return { total, sums };
+  }
+
+  function getFilteredSortedItems(){
+    const list = active();
+    let items = [...list.items];
+
+    const q = (state.search || "").trim().toLowerCase();
+    if(q){
+      items = items.filter(it =>
+        it.name.toLowerCase().includes(q) || it.cat.toLowerCase().includes(q)
+      );
+      $("filteredPill").textContent = `Mostrando: "${state.search}"`;
+    } else {
+      $("filteredPill").textContent = "Mostrando: todo";
+    }
+
+    const sort = state.sort;
+    if(sort === "cat"){
+      items.sort((a,b)=> a.cat.localeCompare(b.cat) || a.name.localeCompare(b.name));
+    } else if(sort === "name"){
+      items.sort((a,b)=> a.name.localeCompare(b.name));
+    } else if(sort === "cost_desc"){
+      items.sort((a,b)=> subtotal(b) - subtotal(a));
+    } else if(sort === "cost_asc"){
+      items.sort((a,b)=> subtotal(a) - subtotal(b));
+    }
+    return items;
+  }
+
+  function renderLists(){
+    const sel = $("listSelect");
+    sel.innerHTML = "";
+    Object.keys(state.lists).forEach(name=>{
+      const opt = document.createElement("option");
+      opt.value = name;
+      opt.textContent = name;
+      sel.appendChild(opt);
+    });
+    sel.value = state.activeList;
+    $("listNamePill").textContent = "Lista: " + state.activeList;
+  }
+
+  function render(){
+    renderLists();
+
+    $("currency").value = state.currency;
+    $("search").value = state.search;
+    $("sort").value = state.sort;
+
+    const list = active();
+    $("budget").value = list.budget ?? "";
+
+    const { total, sums } = compute();
+
+    $("total").textContent = money(total);
+    $("itemsCount").textContent = list.items.length;
+
+    $("sumFood").textContent  = money(sums["🥦 Alimentos"] || 0);
+    $("sumDrink").textContent = money(sums["🥤 Bebidas"] || 0);
+    $("sumHyg").textContent   = money(sums["🧴 Higiene"] || 0);
+    $("sumClean").textContent = money(sums["🧼 Limpieza"] || 0);
+    $("sumOther").textContent = money(sums["✨ Otros"] || 0);
+
+    // presupuesto
+    const budget = Number(list.budget || 0);
+    $("progressText").textContent = `${money(total)} / ${money(budget)}`;
+
+    const bar = $("bar");
+    const msg = $("budgetMsg");
+    const chip = $("statusChip");
+
+    if(budget > 0){
+      const pct = Math.min((total / budget) * 100, 100);
+      bar.style.width = pct + "%";
+      const diff = budget - total;
+      if(diff >= 0){
+        bar.style.background = "var(--primary)";
+        msg.className = "msg ok";
+        msg.textContent = `Te quedan ${money(diff)}.`;
+        chip.textContent = "OK";
+        chip.style.borderColor = "rgba(22,163,74,.25)";
+        chip.style.background = "rgba(22,163,74,.08)";
+        chip.style.color = "var(--ok)";
+      } else {
+        bar.style.background = "var(--warn)";
+        msg.className = "msg warn";
+        msg.textContent = `Te pasaste por ${money(Math.abs(diff))}.`;
+        chip.textContent = "Excedido";
+        chip.style.borderColor = "rgba(220,38,38,.25)";
+        chip.style.background = "rgba(220,38,38,.08)";
+        chip.style.color = "var(--warn)";
+      }
+    } else {
+      bar.style.width = "0%";
+      bar.style.background = "var(--primary)";
+      msg.className = "msg";
+      msg.textContent = "Cargá un presupuesto para ver cuánto te queda.";
+      chip.textContent = "Listo";
+      chip.style.borderColor = "var(--border)";
+      chip.style.background = "#FAFBFF";
+      chip.style.color = "var(--text)";
+    }
+
+    // tabla
+    const tbody = $("tbody");
+    tbody.innerHTML = "";
+
+    const viewItems = getFilteredSortedItems();
+
+    if(viewItems.length === 0){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="6" class="muted" style="padding:14px; font-weight:700;">
+        No hay ítems para mostrar.
+      </td>`;
+      tbody.appendChild(tr);
+      save();
+      return;
+    }
+
+    for(const it of viewItems){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><b>${escapeHtml(it.name)}</b></td>
+        <td>${escapeHtml(it.cat)}</td>
+        <td class="num">${it.qty}</td>
+        <td class="num">${money(it.price)}</td>
+        <td class="num"><b>${money(subtotal(it))}</b></td>
+        <td class="num">
+          <div class="actions">
+            <button class="miniBtn secondary" type="button" data-act="edit" data-id="${it.id}">Editar</button>
+            <button class="miniBtn danger" type="button" data-act="del" data-id="${it.id}">Borrar</button>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    save();
+  }
+
+  function addItem(){
+    const name = $("name").value.trim();
+    const qty = Number($("qty").value);
+    const price = Number($("price").value);
+    const cat = $("cat").value;
+
+    if(!name) return alert("Poné un producto.");
+    if(!Number.isFinite(qty) || qty <= 0) return alert("Cantidad inválida.");
+    if(!Number.isFinite(price) || price < 0) return alert("Precio inválido.");
+
+    const list = active();
+    list.items.unshift({ id: crypto.randomUUID(), name, qty, price, cat });
+
+    $("name").value = "";
+    $("qty").value = 1;
+    $("price").value = "";
+    $("name").focus();
+
+    render();
+  }
+
+  function delById(id){
+    const list = active();
+    list.items = list.items.filter(x => x.id !== id);
+    render();
+  }
+
+  function editById(id){
+    const list = active();
+    const it = list.items.find(x => x.id === id);
+    if(!it) return;
+
+    const newName = prompt("Producto:", it.name);
+    if(newName === null) return;
+
+    const newQty = prompt("Cantidad:", String(it.qty));
+    if(newQty === null) return;
+
+    const newPrice = prompt("Precio unitario:", String(it.price));
+    if(newPrice === null) return;
+
+    const newCat = prompt("Categoría (ej: 🥦 Alimentos / 🧼 Limpieza):", it.cat);
+    if(newCat === null) return;
+
+    const q = Number(newQty);
+    const p = Number(newPrice);
+
+    if(!newName.trim()) return alert("Nombre inválido.");
+    if(!Number.isFinite(q) || q <= 0) return alert("Cantidad inválida.");
+    if(!Number.isFinite(p) || p < 0) return alert("Precio inválido.");
+
+    it.name = newName.trim();
+    it.qty = q;
+    it.price = p;
+    it.cat = newCat.trim() || it.cat;
+
+    render();
+  }
+
+  function exportCSV(){
+    const list = active();
+    const rows = [
+      ["Lista", state.activeList],
+      ["Moneda", state.currency],
+      ["Presupuesto", list.budget || ""],
+      [],
+      ["Producto","Categoria","Cantidad","PrecioUnitario","Subtotal"],
+      ...list.items.map(it => [it.name, it.cat, it.qty, it.price, subtotal(it)])
+    ];
+
+    const csv = rows.map(r => r.map(v => `"${String(v).replaceAll('"','""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type:"text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `listaya_${state.activeList.replaceAll(" ","_")}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function clearList(){
+    if(!confirm("¿Vaciar la lista actual?")) return;
+    active().items = [];
+    render();
+  }
+
+  function newList(){
+    const name = prompt("Nombre de la nueva lista (ej: Kiosco, Limpieza, Semana):");
+    if(!name) return;
+    const n = name.trim();
+    if(!n) return;
+    if(state.lists[n]) return alert("Esa lista ya existe.");
+    state.lists[n] = { budget: "", items: [] };
+    state.activeList = n;
+    render();
+  }
+
+  // --- Eventos ---
+  load();
+
+  $("addBtn").addEventListener("click", addItem);
+  $("price").addEventListener("keydown", (e)=>{ if(e.key === "Enter") addItem(); });
+
+  $("budget").addEventListener("input", ()=>{ active().budget = $("budget").value; render(); });
+  $("currency").addEventListener("change", ()=>{ state.currency = $("currency").value; render(); });
+
+  $("search").addEventListener("input", ()=>{ state.search = $("search").value; render(); });
+  $("sort").addEventListener("change", ()=>{ state.sort = $("sort").value; render(); });
+
+  $("listSelect").addEventListener("change", ()=>{
+    state.activeList = $("listSelect").value;
+    render();
+  });
+
+  $("newListBtn").addEventListener("click", newList);
+  $("exportBtn").addEventListener("click", exportCSV);
+  $("clearBtn").addEventListener("click", clearList);
+
+  $("tbody").addEventListener("click", (e)=>{
+    const btn = e.target.closest("button");
+    if(!btn) return;
+    const act = btn.getAttribute("data-act");
+    const id = btn.getAttribute("data-id");
+    if(act === "del") delById(id);
+    if(act === "edit") editById(id);
+  });
+
+  render();
+</script>
+</body>
+</html>
